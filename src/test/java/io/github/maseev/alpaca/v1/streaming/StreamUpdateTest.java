@@ -1,14 +1,5 @@
 package io.github.maseev.alpaca.v1.streaming;
 
-import static io.github.maseev.alpaca.http.json.util.JsonUtil.fromJson;
-import static io.github.maseev.alpaca.http.json.util.JsonUtil.toJson;
-import static io.github.maseev.alpaca.v1.asset.entity.AssetClass.US_EQUITY;
-import static java.math.BigDecimal.valueOf;
-import static java.time.LocalDateTime.of;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import io.github.maseev.alpaca.v1.account.entity.Account;
 import io.github.maseev.alpaca.v1.account.entity.ImmutableAccount;
 import io.github.maseev.alpaca.v1.order.entity.ImmutableOrder;
@@ -19,11 +10,21 @@ import io.github.maseev.alpaca.v1.streaming.entity.ImmutableTradeUpdate;
 import io.github.maseev.alpaca.v1.streaming.entity.TradeUpdate;
 import io.github.maseev.alpaca.v1.streaming.message.ImmutableStreamUpdate;
 import io.github.maseev.alpaca.v1.streaming.message.StreamUpdate;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.UUID;
-import org.junit.jupiter.api.Test;
+
+import static io.github.maseev.alpaca.http.json.util.JsonUtil.fromJson;
+import static io.github.maseev.alpaca.http.json.util.JsonUtil.toJson;
+import static io.github.maseev.alpaca.v1.asset.entity.AssetClass.US_EQUITY;
+import static java.math.BigDecimal.valueOf;
+import static java.time.LocalDateTime.of;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class StreamUpdateTest {
 
@@ -82,9 +83,12 @@ public class StreamUpdateTest {
     Account account =
       ImmutableAccount.builder()
         .id(UUID.randomUUID().toString())
+        .accountNumber("PA9L3QIMQQEA")
         .status(Account.Status.ACTIVE)
         .currency("USD")
         .buyingPower(valueOf(1))
+        .regtBuyingPower(valueOf(1))
+        .dayTradingBuyingPower(valueOf(1))
         .cash(valueOf(2))
         .cashWithdrawable(valueOf(3))
         .portfolioValue(valueOf(4))

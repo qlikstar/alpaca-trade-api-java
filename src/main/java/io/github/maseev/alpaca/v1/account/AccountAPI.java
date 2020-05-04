@@ -1,13 +1,17 @@
 package io.github.maseev.alpaca.v1.account;
 
-import static io.github.maseev.alpaca.http.HttpClient.HttpMethod.GET;
-
 import io.github.maseev.alpaca.http.HttpClient;
-import io.github.maseev.alpaca.http.Listenable;
+import io.github.maseev.alpaca.http.exception.APIException;
 import io.github.maseev.alpaca.http.transformer.ValueTransformer;
 import io.github.maseev.alpaca.v1.account.entity.Account;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
+
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+
+import static io.github.maseev.alpaca.http.HttpClient.HttpMethod.GET;
 
 /**
  * The accounts API serves important information related to an account, including account status,
@@ -34,9 +38,15 @@ public class AccountAPI {
    *
    * @return the {@link Account} associated with the API key
    */
-  public Listenable<Account> get() {
+  public CompletableFuture<Account> get() {
     ListenableFuture<Response> future = httpClient.prepare(GET, ENDPOINT).execute();
 
-    return new Listenable<>(new ValueTransformer<>(Account.class), future);
+    return future.toCompletableFuture().thenApply( x-> {
+      try {
+        return new ValueTransformer<>(Account.class).transform(x.getResponseBody());
+      } catch (APIException | IOException e) {
+        throw new CompletionException(e);
+      }
+    });
   }
 }

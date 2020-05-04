@@ -1,8 +1,5 @@
 package io.github.maseev.alpaca.v1.account.entity;
 
-import static io.github.maseev.alpaca.v1.util.Available.Version.V1;
-import static io.github.maseev.alpaca.v1.util.Available.Version.V2;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -10,10 +7,14 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.github.maseev.alpaca.http.json.util.DateFormatUtil;
 import io.github.maseev.alpaca.v1.AlpacaAPI.Version;
 import io.github.maseev.alpaca.v1.util.Available;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import org.immutables.value.Value;
 import org.jetbrains.annotations.Nullable;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import static io.github.maseev.alpaca.v1.util.Available.Version.V1;
+import static io.github.maseev.alpaca.v1.util.Available.Version.V2;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableAccount.class)
@@ -62,6 +63,13 @@ public interface Account {
    */
   String id();
 
+  /**
+   * @return Account Number
+   */
+  @Available(in = V2)
+  @JsonProperty("account_number")
+  String accountNumber();
+
   Status status();
 
   String currency();
@@ -73,6 +81,21 @@ public interface Account {
    */
   @JsonProperty("buying_power")
   BigDecimal buyingPower();
+
+  /**
+   * @return Your buying power under Regulation T is calculated as below :
+   * (your excess equity - equity minus margin value - times your margin multiplier)
+   */
+  @Available(in = V2)
+  @JsonProperty("regt_buying_power")
+  BigDecimal regtBuyingPower();
+
+  /**
+   * @return Your buying power for day trades (continuously updated value)
+   */
+  @Available(in = V2)
+  @JsonProperty("daytrading_buying_power")
+  BigDecimal dayTradingBuyingPower();
 
   /**
    * @return Cash balance
@@ -192,6 +215,14 @@ public interface Account {
   @Available(in = V2)
   @JsonProperty("maintenance_margin")
   BigDecimal maintenanceMargin();
+
+  /**
+   * @return Maintenance margin requirement on the previous trading day
+   */
+  @Nullable
+  @Available(in = V2)
+  @JsonProperty("last_maintenance_margin")
+  BigDecimal lastMaintenanceMargin();
 
   /**
    * @return the current number of daytrades that have been made in the last 5 trading days
