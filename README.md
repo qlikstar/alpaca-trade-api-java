@@ -34,30 +34,24 @@ Add `alpaca-trade-api-java` as a dependency:
 String keyId = "Your API key ID";
 String secretKey = "Your secret key";
 
-AlpacaAPI api = new AlpacaAPI(TEST, V1, keyId, secretKey);
+AlpacaAPI api = new AlpacaAPI(TEST, V2, keyId, secretKey);
 ```
 
 `alpaca-trade-api-java` provides two versions of API, asynchronous:
 
 ```java
-api.account()
-  .get()
-  .onComplete(new ResponseHandler<Account>() {
-
-    @Override
-    public void onSuccess(Account result) {
-    }
-
-    @Override
-    public void onError(Exception ex) {
-    }
-  });
+CompletableFuture<Account> account = api.account().get();
+account.thenAccept(acc -> System.out.println("Account number : " + acc.accountNumber()))
+        .exceptionally(ex -> {
+            System.out.println(ex.getLocalizedMessage());
+            return null;
+        });
 ```
 
 and synchronous:
 
 ```java
-Account account = api.account().get().await();
+Account account = api.account().get().get();
 ```
 
 ### Account
@@ -65,7 +59,7 @@ Account account = api.account().get().await();
 #### [Get the account](https://docs.alpaca.markets/api-documentation/web-api/account/#get-the-account)
 
 ```java
-Account account = api.account().get().await();
+Account account = api.account().get().get();
 ```
 
 ### Orders
@@ -81,7 +75,7 @@ Direction direction = Direction.ASC;
 List<Order> orders =
   api.orders()
     .get(status, limit, after, until, direction)
-    .await();
+    .get();
 ```
 
 #### [Request a new order](https://docs.alpaca.markets/api-documentation/web-api/orders/#request-a-new-order)
@@ -96,48 +90,48 @@ OrderRequest request =
     .timeInForce(DAY)
     .build();
 
-Order order = api.orders().place(request).await();
+Order order = api.orders().place(request).get();
 ```
 
 #### [Get an order](https://docs.alpaca.markets/api-documentation/web-api/orders/#get-an-order)
 
 ```java
-Order order = api.orders().get("id").await();
+Order order = api.orders().get("id").get();
 ```
 
 #### [Get an order by client order id](https://docs.alpaca.markets/api-documentation/web-api/orders/#get-an-order-by-client-order-id)
 
 ```java
-Order order = api.orders().getByClientOrderId("id").await();
+Order order = api.orders().getByClientOrderId("id").get();
 ```
 #### [Cancel an order](https://docs.alpaca.markets/api-documentation/web-api/orders/#cancel-an-order)
 
 ```java
-api.orders().cancel("id").await();
+api.orders().cancel("id").get();
 ```
 
 ### Positions
 #### [Get open positions](https://docs.alpaca.markets/api-documentation/web-api/positions/#get-open-positions)
 
 ```java
-List<Position> positions = api.positions().get().await();
+List<Position> positions = api.positions().get().get();
 ```
 #### [Get an open position](https://docs.alpaca.markets/api-documentation/web-api/positions/#get-an-open-position)
 
 ```java
-Position position = api.positions().get("AAPL").await();
+Position position = api.positions().get("AAPL").get();
 ```
 
 ### Assets
 #### [Get assets](https://docs.alpaca.markets/api-documentation/web-api/assets/#get-assets)
 
 ```java
-List<Asset> assets = api.assets().get(ACTIVE, US_EQUITY).await();
+List<Asset> assets = api.assets().get(ACTIVE, US_EQUITY).get();
 ```
 #### [Get an asset](https://docs.alpaca.markets/api-documentation/web-api/assets/#get-an-asset)
 
 ```java
-Asset asset = api.assets().get("AAPL").await();
+Asset asset = api.assets().get("AAPL").get();
 ```
 
 ### Calendar
@@ -147,13 +141,13 @@ Asset asset = api.assets().get("AAPL").await();
 LocalDate start = LocalDate.now();
 LocalDate end = start.plusDays(10);
 
-List<Calendar> calendars = api.calendar().get(start, end).await();
+List<Calendar> calendars = api.calendar().get(start, end).get();
 ```
 ### Clock
 #### [Get the clock](https://docs.alpaca.markets/api-documentation/web-api/clock/#get-the-clock)
 
 ```java
-Clock clock = api.clock().get().await();
+Clock clock = api.clock().get().get();
 ```
 
 ### Market Data
@@ -170,7 +164,7 @@ int limit = 10;
 Map<String, List<Bar>> bars =
   api.bars()
     .get(symbol, timeframe, start, end, timeInclusive, 10)
-    .await();
+    .get();
 ```
 
 ### Streaming

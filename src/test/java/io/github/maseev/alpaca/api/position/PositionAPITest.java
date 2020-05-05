@@ -9,12 +9,12 @@ import io.github.maseev.alpaca.api.position.entity.Position;
 import io.github.maseev.alpaca.http.HttpClient;
 import io.github.maseev.alpaca.http.HttpCode;
 import io.github.maseev.alpaca.http.exception.APIException;
-import io.github.maseev.alpaca.http.exception.EntityNotFoundException;
 import io.github.maseev.alpaca.http.util.ContentType;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import static io.github.maseev.alpaca.http.json.util.JsonUtil.toJson;
 import static java.math.BigDecimal.valueOf;
@@ -87,7 +87,8 @@ public class PositionAPITest extends APITest {
           .withStatusCode(HttpCode.NOT_FOUND.getCode())
           .withReasonPhrase("Position not found"));
 
-    assertThrows(EntityNotFoundException.class, () ->api.positions().get(symbol).await());
+    // EntityNotFoundException.class
+    assertThrows(ExecutionException.class, () ->api.positions().get(symbol).get());
   }
 
   @Test
@@ -125,7 +126,7 @@ public class PositionAPITest extends APITest {
           .withStatusCode(HttpCode.OK.getCode())
           .withBody(toJson(expectedPosition), MediaType.JSON_UTF_8));
 
-    Position position = api.positions().get(expectedPosition.symbol()).await();
+    Position position = api.positions().get(expectedPosition.symbol()).get();
 
     assertThat(position, is(equalTo(expectedPosition)));
   }

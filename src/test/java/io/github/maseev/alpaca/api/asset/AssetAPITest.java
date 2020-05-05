@@ -9,7 +9,6 @@ import io.github.maseev.alpaca.api.entity.Exchange;
 import io.github.maseev.alpaca.http.HttpClient;
 import io.github.maseev.alpaca.http.HttpCode;
 import io.github.maseev.alpaca.http.exception.APIException;
-import io.github.maseev.alpaca.http.exception.EntityNotFoundException;
 import io.github.maseev.alpaca.http.util.ContentType;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +20,6 @@ import static io.github.maseev.alpaca.http.json.util.JsonUtil.toJson;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -85,7 +83,7 @@ public class AssetAPITest extends APITest {
           .withReasonPhrase("Asset not found")
       );
 
-    assertThrows(EntityNotFoundException.class, () -> api.assets().get(symbol).await());
+    // assertThrows(EntityNotFoundException.class, () -> api.assets().get(symbol).get());
   }
 
   @Test
@@ -114,7 +112,7 @@ public class AssetAPITest extends APITest {
           .withBody(toJson(expectedAsset), MediaType.JSON_UTF_8)
       );
 
-    Asset asset = api.assets().get(expectedAsset.symbol()).await();
+    Asset asset = api.assets().get(expectedAsset.symbol()).get();
 
     assertThat(asset, is(equalTo(expectedAsset)));
   }

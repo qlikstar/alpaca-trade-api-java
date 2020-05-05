@@ -48,7 +48,7 @@ public class ClockAPITest extends APITest {
           .withBody(toJson(expectedClock), MediaType.JSON_UTF_8)
       );
 
-    Clock clock = api.clock().get().await();
+    Clock clock = api.clock().get().get();
 
     assertThat(clock, is(equalTo(expectedClock)));
   }

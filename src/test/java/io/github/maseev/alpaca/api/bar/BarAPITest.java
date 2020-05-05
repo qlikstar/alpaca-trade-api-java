@@ -8,7 +8,6 @@ import io.github.maseev.alpaca.api.bar.entity.ImmutableBar;
 import io.github.maseev.alpaca.http.HttpClient;
 import io.github.maseev.alpaca.http.HttpCode;
 import io.github.maseev.alpaca.http.exception.APIException;
-import io.github.maseev.alpaca.http.exception.UnprocessableException;
 import io.github.maseev.alpaca.http.util.ContentType;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static io.github.maseev.alpaca.http.json.util.DateFormatUtil.format;
 import static io.github.maseev.alpaca.http.json.util.JsonUtil.toJson;
@@ -79,7 +79,7 @@ public class BarAPITest extends APITest {
     Map<String, List<Bar>> bars =
       api.bars()
         .get(symbol, timeframe, start, end, timeInclusive, 10)
-        .await();
+        .get();
 
     assertThat(bars, is(equalTo(expectedBars)));
   }
@@ -129,7 +129,7 @@ public class BarAPITest extends APITest {
     Map<String, List<Bar>> bars =
       api.bars()
         .get(symbol, timeframe, start, end, timeInclusive, 10)
-        .await();
+        .get();
 
     assertThat(bars, is(equalTo(expectedBars)));
   }
@@ -162,9 +162,9 @@ public class BarAPITest extends APITest {
           .withReasonPhrase("The parameters are not well formed")
       );
 
-    assertThrows(UnprocessableException.class,
+    assertThrows(ExecutionException.class, // UnprocessableException.class
       () -> api.bars()
         .get(symbol, timeframe, start, end, timeInclusive, 10)
-        .await());
+        .get());
   }
 }

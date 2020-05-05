@@ -4,16 +4,19 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.maseev.alpaca.api.bar.entity.Bar;
 import io.github.maseev.alpaca.http.HttpClient;
-import io.github.maseev.alpaca.http.Listenable;
+import io.github.maseev.alpaca.http.exception.APIException;
 import io.github.maseev.alpaca.http.exception.UnprocessableException;
 import io.github.maseev.alpaca.http.transformer.GenericTransformer;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static io.github.maseev.alpaca.http.json.util.DateFormatUtil.format;
 import static java.util.Arrays.asList;
@@ -53,7 +56,7 @@ public class BarAPI {
   /**
    * @see BarAPI#get(String[], Timeframe, OffsetDateTime, OffsetDateTime, boolean, int)
    */
-  public Listenable<Map<String, List<Bar>>> get(String symbol, Timeframe timeframe,
+  public CompletableFuture<Map<String, List<Bar>>> get(String symbol, Timeframe timeframe,
                                                 OffsetDateTime start, OffsetDateTime end,
                                                 boolean timeInclusive, int limit) {
     return get(new String[] {symbol}, timeframe, start, end, timeInclusive, limit);
@@ -74,9 +77,9 @@ public class BarAPI {
    * @return A hash-map with a key for each symbol and the list of {@link Bar} as the values.
    * @throws UnprocessableException in case the parameters are not well formed.
    */
-  public Listenable<Map<String, List<Bar>>> get(String[] symbols, Timeframe timeframe,
-                                                OffsetDateTime start, OffsetDateTime end,
-                                                boolean timeInclusive, int limit) {
+  public CompletableFuture<Map<String, List<Bar>>> get(String[] symbols, Timeframe timeframe,
+                                                       OffsetDateTime start, OffsetDateTime end,
+                                                       boolean timeInclusive, int limit) {
     validate(symbols, start, end, limit);
 
     BoundRequestBuilder requestBuilder =
@@ -94,8 +97,13 @@ public class BarAPI {
 
     ListenableFuture<Response> future = requestBuilder.execute();
 
-    return new Listenable<>(
-      new GenericTransformer<>(new TypeReference<Map<String, List<Bar>>>() {}), future);
+    return future.toCompletableFuture().thenApply( x-> {
+      try {
+        return new GenericTransformer<>(new TypeReference<Map<String, List<Bar>>>() {}).transform(x.getResponseBody());
+      } catch (APIException | IOException e) {
+        throw new CompletionException(e);
+      }
+    });
   }
 
   private static void validate(String[] symbols, OffsetDateTime start, OffsetDateTime end,

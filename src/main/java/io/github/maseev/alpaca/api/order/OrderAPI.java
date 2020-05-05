@@ -8,6 +8,7 @@ import io.github.maseev.alpaca.api.order.entity.OrderRequest;
 import io.github.maseev.alpaca.api.streaming.StreamingAPI;
 import io.github.maseev.alpaca.http.HttpClient;
 import io.github.maseev.alpaca.http.Listenable;
+import io.github.maseev.alpaca.http.exception.APIException;
 import io.github.maseev.alpaca.http.exception.EntityNotFoundException;
 import io.github.maseev.alpaca.http.exception.ForbiddenException;
 import io.github.maseev.alpaca.http.exception.UnprocessableException;
@@ -17,9 +18,12 @@ import io.github.maseev.alpaca.http.transformer.ValueTransformer;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static io.github.maseev.alpaca.http.json.util.JsonUtil.toJson;
 import static io.github.maseev.alpaca.http.util.StringUtil.requireNonEmpty;
@@ -163,13 +167,20 @@ public class OrderAPI {
    * @throws UnprocessableException  if an Order is no longer cancelable (e.g. {@link
    *                                 Order.Status#FILLED})
    */
-  public Listenable<Void> cancel(String orderId) {
+  public CompletableFuture<Void> cancel(String orderId) {
     requireNonEmpty(orderId, "orderId");
 
     ListenableFuture<Response> future =
       httpClient.prepare(HttpClient.HttpMethod.DELETE, ENDPOINT, orderId).execute();
 
-    return new Listenable<>(new ValueTransformer<>(Void.class), future);
+    return future.toCompletableFuture().thenApply( x-> {
+      try {
+        return new ValueTransformer<>(Void.class).transform(x.getResponseBody());
+      } catch (APIException | IOException e) {
+        throw new CompletionException(e);
+      }
+    });
+
   }
 
   private static void validate(int limit, LocalDateTime after, LocalDateTime until) {

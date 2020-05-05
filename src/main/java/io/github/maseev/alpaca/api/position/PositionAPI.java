@@ -4,13 +4,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.maseev.alpaca.api.position.entity.Position;
 import io.github.maseev.alpaca.http.HttpClient;
 import io.github.maseev.alpaca.http.Listenable;
+import io.github.maseev.alpaca.http.exception.APIException;
 import io.github.maseev.alpaca.http.exception.EntityNotFoundException;
 import io.github.maseev.alpaca.http.transformer.GenericTransformer;
 import io.github.maseev.alpaca.http.transformer.ValueTransformer;
 import org.asynchttpclient.ListenableFuture;
 import org.asynchttpclient.Response;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static io.github.maseev.alpaca.http.util.StringUtil.requireNonEmpty;
 
@@ -49,12 +53,18 @@ public class PositionAPI {
    * @return a list of {@link Position} for the given symbol
    * @throws EntityNotFoundException if a {@link Position} is not found
    */
-  public Listenable<Position> get(String symbol) {
+  public CompletableFuture<Position> get(String symbol) {
     requireNonEmpty(symbol, "symbol");
 
     ListenableFuture<Response> future =
       httpClient.prepare(HttpClient.HttpMethod.GET, ENDPOINT, symbol).execute();
 
-    return new Listenable<>(new ValueTransformer<>(Position.class), future);
+    return future.toCompletableFuture().thenApply( x-> {
+      try {
+        return new ValueTransformer<>(Position.class).transform(x.getResponseBody());
+      } catch (APIException | IOException e) {
+        throw new CompletionException(e);
+      }
+    });
   }
 }

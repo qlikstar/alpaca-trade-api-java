@@ -329,9 +329,7 @@ public class StreamUpdateListenerTest {
 
     AtomicReference<ConnectionClose> connectionClose = new AtomicReference<>();
 
-    streamingAPI.subscribe((ConnectionClose event) -> {
-      connectionClose.set(event);
-    });
+    streamingAPI.subscribe(connectionClose::set);
 
     int code = 999;
     String reason = "999";

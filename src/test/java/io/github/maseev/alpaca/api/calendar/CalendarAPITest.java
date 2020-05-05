@@ -30,7 +30,7 @@ public class CalendarAPITest extends APITest {
     LocalDate start = LocalDate.now();
     LocalDate end = start.minusDays(1);
 
-    assertThrows(IllegalArgumentException.class, () -> api.calendar().get(start, end).await());
+    assertThrows(IllegalArgumentException.class, () -> api.calendar().get(start, end).get());
   }
 
   @Test
@@ -63,7 +63,7 @@ public class CalendarAPITest extends APITest {
           .withBody(toJson(expectedCalendars), MediaType.JSON_UTF_8)
       );
 
-    List<Calendar> calendars = api.calendar().get(start, end).await();
+    List<Calendar> calendars = api.calendar().get(start, end).get();
 
     assertThat(calendars, is(equalTo(expectedCalendars)));
   }
